@@ -13,31 +13,16 @@ const bot = new BootBot({
 });
 
 
-bot.hear(['help'], (payload, chat) => {
-	// Send a text message with buttons
-	chat.say({
-		text: 'What do you need help with?',
-		buttons: [
-			{ type: 'postback', title: 'Settings', payload: 'HELP_SETTINGS' },
-			{ type: 'postback', title: 'FAQ', payload: 'HELP_FAQ' },
-			{ type: 'postback', title: 'Talk to a human', payload: 'HELP_HUMAN' }
-		]
-	});
-});
-
-bot.hear('Get Started',(payload, chat) => {
-	const text = payload.message.text;
-  chat.getUserProfile().then((user) => {
-    chat.say(`Hello, ${user.first_name}!`);
-  });
-});
-
 bot.hear(['hello', 'hi'], (payload, chat) => {
   chat.getUserProfile().then((user) => {
-    chat.say(`Hello, ${user.first_name}! Let me recommend you the movie for your movie session. Just tell me Genre`);
+    chat.say(`Hello, ${user.first_name}! Let me tell you something about your favourite beer! Tell me the word beer and the name of your beer (eg. beer Pilsner).`);
   });
 });
 
+bot.hear(['help'], (payload, chat) => {
+  // Send a text message with buttons
+    chat.say('If you want to find the new info about your beer, just say beer and the name of your beer (eg. beer Pilsner. If you dont know any meanings of abbreviations or any detail names just say help and the name of detail (eg. help abv). If you still dont know what to do call 911!')
+});
 
 bot.hear(/beer (.*)/i, (payload, chat, data) => {
   chat.conversation((conversation) => {
@@ -46,20 +31,34 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
 
     console.log(beerName);
 
-    /*fetch(MOVIE_API + '&T=' + movieName).then(res => res.json()).then(json => {
-      console.log("Search result is "+JSON.stringify(json));
-      if(json.Response == "False"){
-        conversation.say('I could not find the movie ' + movieName + ', you can try search again')
-      }
-      else {
-        conversation.say('The movie is from ' + json.Year + ' and was directed by ' + json.Director)  
-      }
-      
-    })*/
-
       fetch(BEER_API+'?beer_name='+beerName).then(res => res.json()).then(json => {
-        console.log("Search result is "+JSON.stringify(json))});
-        console.log(BEER_API+'beer_name='+beerName);
+        //console.log("Search result is "+JSON.stringify(json))
+
+        if(json.Response == "False"){
+          conversation.say('I could not find the beer '+beerName+ ', please try it again.')
+        }
+        else {
+          var beerList = json;
+          if(beerList.length > 1){
+            let buttons = beerList.map(product => {
+              return {
+                "type": "postback",
+                "title": product.name,
+                "payload": product.name
+              };
+            });
+            chat.say({
+              text: 'I found multiple results, which one is yours?',
+              buttons
+            });  
+          }
+          else {
+            conversation.say('What would you like to know about your beer?')
+          }
+        }
+      });
+
+      //console.log(BEER_API+'beer_name='+beerName);
 
     conversation.end();
   })
