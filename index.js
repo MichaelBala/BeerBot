@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 
 var port = process.env.PORT || config.get('PORT');
 
-const MOVIE_API = "http://www.omdbapi.com/?apikey=8df4f6a8";
+const BEER_API = "https://api.punkapi.com/v2/beers";
 
 const bot = new BootBot({
   accessToken: config.get('ACCESS_TOKEN'),
@@ -12,23 +12,41 @@ const bot = new BootBot({
   appSecret: config.get('APP_SECRET')
 });
 
-bot.on('message', (payload, chat) => {
+
+bot.hear(['help'], (payload, chat) => {
+	// Send a text message with buttons
+	chat.say({
+		text: 'What do you need help with?',
+		buttons: [
+			{ type: 'postback', title: 'Settings', payload: 'HELP_SETTINGS' },
+			{ type: 'postback', title: 'FAQ', payload: 'HELP_FAQ' },
+			{ type: 'postback', title: 'Talk to a human', payload: 'HELP_HUMAN' }
+		]
+	});
+});
+
+bot.hear('Get Started',(payload, chat) => {
 	const text = payload.message.text;
-	console.log(`The user said: ${text}`);
+  chat.getUserProfile().then((user) => {
+    chat.say(`Hello, ${user.first_name}!`);
+  });
 });
 
 bot.hear(['hello', 'hi'], (payload, chat) => {
-	chat.say('Hi! If you would like to know details about movie tell me the word "movie" and then the name of the movie');
+  chat.getUserProfile().then((user) => {
+    chat.say(`Hello, ${user.first_name}! Let me recommend you the movie for your movie session. Just tell me Genre`);
+  });
 });
 
-bot.hear(/movie (.*)/i, (payload, chat, data) => {
+
+bot.hear(/beer (.*)/i, (payload, chat, data) => {
   chat.conversation((conversation) => {
     console.log(data);
-    const movieName = data.match[1];
+    const beerName = data.match[1];
 
-    console.log(movieName);
+    console.log(beerName);
 
-    fetch(MOVIE_API + '&T=' + movieName).then(res => res.json()).then(json => {
+    /*fetch(MOVIE_API + '&T=' + movieName).then(res => res.json()).then(json => {
       console.log("Search result is "+JSON.stringify(json));
       if(json.Response == "False"){
         conversation.say('I could not find the movie ' + movieName + ', you can try search again')
@@ -37,8 +55,12 @@ bot.hear(/movie (.*)/i, (payload, chat, data) => {
         conversation.say('The movie is from ' + json.Year + ' and was directed by ' + json.Director)  
       }
       
-    })
-    
+    })*/
+
+      fetch(BEER_API+'?beer_name='+beerName).then(res => res.json()).then(json => {
+        console.log("Search result is "+JSON.stringify(json))});
+        console.log(BEER_API+'beer_name='+beerName);
+
     conversation.end();
   })
 })
