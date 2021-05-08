@@ -33,27 +33,74 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
     var beerList = json;
     
     var Beers = beerList.map(beer => { return beer.name});
+    var beerName = beerList.map(beer => { return beer.name});
+    var beerDescription = beerList.map(beer => { return beer.description});
+    var beerTagline = beerList.map(beer => { return beer.tagline});
+    var beerIBU = beerList.map(beer => { return beer.ibu});
+    var beerFoodpairing = beerList.map(beer => { return beer.food_pairing});
+    var beerBrewertips = beerList.map(beer => { return beer.brewer_tips});
+    const question = {
+          text: 'Choose one from these options.',
+          quickReplies: [ 'Basic Facts', 'Food Pairing', 'Brewer Tips' ]
+        }
+    
+    const answer = (payload, convo) => {
+        const text = payload.message.text;
+        convo.say(`Ok, let me tell you something about ${text}!`).then(() => {
+        if(text == "Basic Facts"){
+          basicFacts(convo)
+        } else if(text == "Food Pairing") {
+          foodPiaring(convo)
+        } else {
+          brewerTips(convo)
+        }
+    })}
+
+    const basicFacts = (convo) => {
+      convo.say('The full name is ' + beerName + '. Description: '+ beerDescription + 'Tagline: '+ beerTagline + 'IBU: ' + beerIBU)
+      convo.end()
+    }
+
+    const foodPiaring = (convo) => {
+      convo.say('Best with: '+ beerFoodpairing)
+      convo.end()
+    }
+
+    const brewerTips = (convo) => {
+      convo.say('How to brew tips: '+ beerBrewertips)
+      convo.end()
+    }
+
     if(beerList.length == 0){
       convo.say('I could not find the beer "'+beerName+ '", please try it again.')
       
     }
     else {
+      
       if(beerList.length > 1){
-    const askBeer= (convo) => {   
+      const askBeer= (convo) => {   
       convo.ask('I found multiple results, which one is yours? '+ Beers, (payload, convo) => {
         const text = payload.message.text;
         convo.set('beer', text);
-        convo.say(`Oh, you chose ${text}. What would you like to know?`).then(
-        convo.say({
-          text: 'Choose one from there options.',
-          buttons: [
-            { type: 'postback', title: 'Basic facts', payload: 'basicFacts' },
-            { type: 'postback', title: 'Food pairing', payload: 'foodPairing' },
-            { type: 'postback', title: 'Brewer tips', payload: 'brewerTips' }
-          ]
-        }).then(() => convo.end()));
+        convo.say(`Oh, you chose ${text}. What would you like to know?`)
       });
     };
+
+
+    /*
+    const menu = (convo) => {convo.ask({
+      text: 'Choose one from there options.',
+      buttons: [
+        { type: 'postback', title: 'Basic facts', payload: 'basicFacts' },
+        { type: 'postback', title: 'Food pairing', payload: 'foodPairing' },
+        { type: 'postback', title: 'Brewer tips', payload: 'brewerTips' }
+      ]
+    }, (payload, convo, data) => {
+      const text = payload.message.text;
+      console.log(text);
+    })};*/
+
+
     chat.conversation((convo) => {
       askBeer(convo);
     });
@@ -61,24 +108,16 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
   else {
     var beerList = json;
 
-    const askBeer= (convo) => {  
+    const askBeer= (convo, payload) => {  
       convo.set("beer", Beers)
-      convo.say('What would you like to know about your beer '+ Beers +'?').then(
-      convo.say({
-        text: 'Choose one from there options.',
-        buttons: [
-          { type: 'postback', title: 'Basic facts', payload: 'basicFacts' },
-          { type: 'postback', title: 'Food pairing', payload: 'foodPairing' },
-          { type: 'postback', title: 'Brewer tips', payload: 'brewerTips' }
-        ]
-      }).then(() => convo.end()));
-    };
+      convo.say('What would you like to know about your beer '+ Beers +'?').then(() =>
+      convo.ask(question, answer))
+    }; 
+
   chat.conversation((convo) => {
-    askBeer(convo);
+    askBeer(convo) 
   });
   }
-
-
 }        
 }); 
 });
