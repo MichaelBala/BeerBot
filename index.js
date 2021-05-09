@@ -13,7 +13,7 @@ const bot = new BootBot({
 });
 
 
-bot.hear(['hello', 'hi'], (payload, chat) => {
+bot.hear(['hello', 'hi', 'hey'], (payload, chat) => {
   chat.getUserProfile().then((user) => {
     chat.say(`Hello, ${user.first_name}! Let me tell you something about your favourite beer! Tell me the word beer and the name of your beer (eg. beer Pilsner).`);
   });
