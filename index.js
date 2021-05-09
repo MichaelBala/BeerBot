@@ -39,6 +39,7 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
     var beerIBU = beerList.map(beer => { return beer.ibu});
     var beerFoodpairing = beerList.map(beer => { return beer.food_pairing});
     var beerBrewertips = beerList.map(beer => { return beer.brewer_tips});
+    
     const question = {
           text: 'Choose one from these options.',
           quickReplies: [ 'Basic Facts', 'Food Pairing', 'Brewer Tips' ]
@@ -55,6 +56,24 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
           brewerTips(convo)
         }
     })}
+
+    /*const buttons = beerList.map(product => {
+      return {
+        "type": "postback",
+        "title": product.name,
+        "payload": product.name
+    }});
+    
+    const question2 = {
+      text:"I found multiple results, which one is yours?",
+      buttons: buttons
+    }
+
+    const answer2 = (payload, convo) => {
+      const text = payload.message.text;
+      convo.set('name', text);
+      convo.say(`Oh, your name is ${text}`)}  
+      */ 
 
     const basicFacts = (convo) => {
       convo.say('The full name is ' + beerName + '. Description: '+ beerDescription + 'Tagline: '+ beerTagline + 'IBU: ' + beerIBU)
@@ -83,11 +102,12 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
         convo.ask('I found multiple results, which one is yours? '+ Beers, (payload, convo) => {
         const text = payload.message.text;
         convo.set('beer', text);
-        convo.say(`Oh, you chose ${text}. What would you like to know?`)
+        convo.say(`Oh, you chose ${text}. What would you like to know?`).then(() =>
+        convo.ask(question, answer))
       });
     };
 
-
+    
     /*
     const menu = (convo) => {convo.ask({
       text: 'Choose one from there options.',
@@ -103,6 +123,8 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
 
 
     chat.conversation((convo) => {
+      
+      //convo.ask(question2, answer2);
       askBeer(convo);
     });
   }
@@ -125,12 +147,53 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
 
   
 bot.hear(/help (.*)/i, (payload, chat, data) => {
-  chat.conversation((convo) => {
+  chat.conversation((conversation) => {
     const helpQ = data.match[1];
-    console.log(helpQ);
+    console.log(data)
+    //console.log(helpQ);
+    switch(helpQ.replace(/\s/g, '').toLowerCase()){
+      case "name":
+        chat.say(hints.Name)
+        conversation.end();
+        break;
+
+      case "description":
+        chat.say(hints.Description)
+        conversation.end();
+        break;
+      
+      case "tagline":
+       chat.say(hints.Tagline)
+       conversation.end();
+        break;
+
+      case "ibu":
+        chat.say(hints.IBU)
+        conversation.end();
+          break;
+
+      case "foodpairing":
+        chat.say(hints.FoodPairing)
+        conversation.end();
+          break;
+
+      case "brewertips":
+        chat.say(hints.BrewerTips)
+        conversation.end();
+          break;
+    }
+    
   })
 });
 
+var hints = {
+  Name: "Name of the beer",
+  Description: "Short description about specific beer",
+  Tagline: "Slogan of beer's brand",
+  IBU: "International bitterness scale",
+  FoodPairing: "Tips of food to drink with",
+  BrewerTips: "Tips how to brew the specific beer"
+}
 /*
 bot.hear(/beer (.*)/i, (payload, chat, data) => {
   chat.conversation((convo) => {
@@ -170,7 +233,7 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
                   return {
                     "type": "postback",
                     "title": product.name,
-                    "payload": "answer"
+                    "payload": product.name
                   };
                 });
                 convo.ask({
