@@ -25,9 +25,9 @@ bot.hear(['help'], (payload, chat) => {
 });
 
 bot.hear(/beer (.*)/i, (payload, chat, data) => {
-  const beerName = data.match[1];
+  const beerNameApi = data.match[1];
 
-  fetch(BEER_API+'?beer_name='+beerName).then(res => res.json()).then(json => {
+  fetch(BEER_API+'?beer_name='+beerNameApi).then(res => res.json()).then(json => {
     //console.log("Search result is "+JSON.stringify(json))
   
     var beerList = json;
@@ -72,14 +72,15 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
     }
 
     if(beerList.length == 0){
-      convo.say('I could not find the beer "'+beerName+ '", please try it again.')
-      
+      chat.conversation((convo) => {
+        convo.say('I could not find the beer "'+beerNameApi+ '", please try it again.')
+        convo.end();
+      })
     }
-    else {
-      
+    else {      
       if(beerList.length > 1){
       const askBeer= (convo) => {   
-      convo.ask('I found multiple results, which one is yours? '+ Beers, (payload, convo) => {
+        convo.ask('I found multiple results, which one is yours? '+ Beers, (payload, convo) => {
         const text = payload.message.text;
         convo.set('beer', text);
         convo.say(`Oh, you chose ${text}. What would you like to know?`)
@@ -123,7 +124,12 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
 });
 
   
-
+bot.hear(/help (.*)/i, (payload, chat, data) => {
+  chat.conversation((convo) => {
+    const helpQ = data.match[1];
+    console.log(helpQ);
+  })
+});
 
 /*
 bot.hear(/beer (.*)/i, (payload, chat, data) => {
@@ -209,12 +215,7 @@ bot.hear(/beer (.*)/i, (payload, chat, data) => {
         }        
       });
 
-      bot.hear(/help (.*)/i, (payload, chat, data) => {
-        chat.conversation((conversation) => {
-          const helpQ = data.match[1];
-          console.log(helpQ);
-        })
-      });
+
 
       //console.log(BEER_API+'beer_name='+beerName);
       convo.end();
